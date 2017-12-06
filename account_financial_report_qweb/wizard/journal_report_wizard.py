@@ -42,6 +42,13 @@ class JournalReportWizard(models.TransientModel):
         default='all',
         required=True,
     )
+    with_currency = fields.Boolean()
+    sort_option = fields.Selection(
+        selection='_get_sort_options',
+        string="Sort entries by",
+        default='move_name',
+        required=True,
+    )
 
     @api.model
     def _get_move_targets(self):
@@ -49,6 +56,13 @@ class JournalReportWizard(models.TransientModel):
             ('all', _("All")),
             ('posted', _("Posted")),
             ('draft', _("Not Posted"))
+        ]
+
+    @api.model
+    def _get_sort_options(self):
+        return [
+            ('move_name', _("Entry number")),
+            ('date', _("Date")),
         ]
 
     @api.onchange('date_range_id')
@@ -73,8 +87,10 @@ class JournalReportWizard(models.TransientModel):
             'date_from': self.date_from,
             'date_to': self.date_to,
             'move_target': self.move_target,
+            'with_currency': self.with_currency,
             'company_id': self.company_id.id,
-            'journal_ids': [(6, 0, self.journal_ids.ids)]
+            'journal_ids': [(6, 0, self.journal_ids.ids)],
+            'sort_option': self.sort_option,
         }
 
     @api.multi

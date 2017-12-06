@@ -17,7 +17,7 @@
 
     <menuitem
         id="journal_report_wizard_menu"
-        name="Journal"
+        name="Journal Ledger"
         parent="menu_oca_reports"
         action="journal_report_wizard_act_window"
         sequence="15"

@@ -7,6 +7,7 @@
                 <t t-call="account_financial_report_qweb.internal_layout">
                     <t t-set="title">Journal Ledger</t>
                     <t t-set="company_name" t-value="o.company_id.name"/>
+                    <t t-set="display_currency" t-value="o.with_currency"/>
 
                     <div class="page">
                         <t t-foreach="o.report_journal_ids" t-as="journal">
@@ -26,7 +27,7 @@
     <template id="account_financial_report_qweb.report_journal_qweb_journal">
         <div class="act_as_table list_table" style="margin-top: 10px;"/>
         <div class="act_as_caption account_title" style="width: 1141px !important;">
-            <span t-field="journal.name"/> - <span t-field="o.date_from"/> to <span t-field="o.date_to"/> - <span t-field="o.move_target"/> Moves
+            <span t-field="journal.name"/> (<span t-field="journal.currency_id.name"/>) - <span t-field="o.date_from"/> to <span t-field="o.date_to"/> - <span t-field="o.move_target"/> Moves
         </div>
 
         <div class="act_as_table data_table" style="width: 1140px !important;">
@@ -79,8 +80,15 @@
                 <div class="act_as_cell amount"
                      name="credit"
                      style="width: 80px;">
-                    Debit
+                    Credit
                 </div>
+                <t t-if="display_currency">
+                    <div class="act_as_cell amount"
+                         name="amount_currency"
+                         style="width: 80px;">
+                        Currency
+                    </div>
+                </t>
             </div>
         </div>
     </template>
@@ -107,6 +115,11 @@
                  name="credit">
                 <b><span t-field="journal.credit"/></b>
             </div>
+            <t t-if="display_currency">
+                <div class="act_as_cell amount"
+                     name="amount_currency">
+                </div>
+            </t>
         </div>
         <div style="width: 1140px !important;border-bottom: 1px solid black !important;height: 1px !important"/>
     </template>
@@ -163,6 +176,14 @@
                 <span t-field="move_line.credit"/>
             </t>
         </div>
+        <t t-if="display_currency">
+            <div class="act_as_cell amount"
+                 name="amount_currency">
+                <t t-if="move_line.amount_currency">
+                    <span t-field="move_line.amount_currency"/>
+                </t>
+            </div>
+        </t>
     </template>
 
     <template id="account_financial_report_qweb.report_journal_qweb_journal_taxes">

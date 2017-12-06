@@ -25,6 +25,12 @@ class ReportJournalQweb(models.TransientModel):
     move_target = fields.Selection(
         selection='_get_move_targets',
         default='all',
+        required=True,
+    )
+    sort_option = fields.Selection(
+        selection='_get_sort_options',
+        default='move_name',
+        required=True,
     )
     journal_ids = fields.Many2many(
         comodel_name='account.journal',
@@ -38,10 +44,15 @@ class ReportJournalQweb(models.TransientModel):
         comodel_name='report_journal_qweb_journal_tax_line',
         inverse_name='report_id',
     )
+    with_currency = fields.Boolean()
 
     @api.model
     def _get_move_targets(self):
         return self.env['journal.report.wizard']._get_move_targets()
+
+    @api.model
+    def _get_sort_options(self):
+        return self.env['journal.report.wizard']._get_sort_options()
 
     @api.multi
     def compute_data_for_report(self):
@@ -68,7 +79,9 @@ class ReportJournalQweb(models.TransientModel):
                 report_id,
                 journal_id,
                 name,
-                code
+                code,
+                company_id,
+                currency_id
             )
             SELECT
                 %s as create_uid,
@@ -76,9 +89,13 @@ class ReportJournalQweb(models.TransientModel):
                 %s as report_id,
                 aj.id as journal_id,
                 aj.name as name,
-                aj.code as code
+                aj.code as code,
+                aj.company_id as company_id,
+                COALESCE(aj.currency_id, company.currency_id) as currency_id
             FROM
                 account_journal aj
+            LEFT JOIN
+                res_company company on (company.id = aj.company_id)
             WHERE
                 aj.id in %s
             AND
@@ -113,7 +130,8 @@ class ReportJournalQweb(models.TransientModel):
                 report_id,
                 report_journal_id,
                 move_id,
-                name
+                name,
+                company_id
             )
         """
 
@@ -126,7 +144,8 @@ class ReportJournalQweb(models.TransientModel):
                 rjqj.report_id as report_id,
                 rjqj.id as report_journal_id,
                 am.id as move_id,
-                am.name as name
+                am.name as name,
+                am.company_id as company_id
             FROM
                 account_move am
             INNER JOIN
@@ -155,10 +174,14 @@ class ReportJournalQweb(models.TransientModel):
     @api.multi
     def _get_inject_move_order_by(self):
         self.ensure_one()
-        return """
+        order_by = """
             ORDER BY
-                am.name
         """
+        if self.sort_option == 'move_name':
+            order_by += " am.name"
+        elif self.sort_option == 'date':
+            order_by += " am.date"
+        return order_by
 
     @api.multi
     def _get_inject_move_params(self):
@@ -196,8 +219,13 @@ class ReportJournalQweb(models.TransientModel):
                 label,
                 debit,
                 credit,
+                company_currency_id,
+                amount_currency,
+                currency_id,
+                currency_name,
                 tax_id,
-                taxes_description
+                taxes_description,
+                company_id
             )
             SELECT
                 %s as create_uid,
@@ -217,6 +245,10 @@ class ReportJournalQweb(models.TransientModel):
                 aml.name as label,
                 aml.debit as debit,
                 aml.credit as credit,
+                aml.company_currency_id as currency_id,
+                aml.amount_currency as amount_currency,
+                aml.currency_id as currency_id,
+                currency.name as currency_name,
                 aml.tax_line_id as tax_id,
                 CASE
                     WHEN
@@ -238,7 +270,8 @@ class ReportJournalQweb(models.TransientModel):
                         aml_at_rel.account_move_line_id = aml.id)
                 ELSE
                     ''
-                END as taxes_description
+                END as taxes_description,
+                aml.company_id as company_id
             FROM
                 account_move_line aml
             INNER JOIN
@@ -253,6 +286,9 @@ class ReportJournalQweb(models.TransientModel):
             LEFT JOIN
                 account_tax at
                     on (at.id = aml.tax_line_id)
+            LEFT JOIN
+                res_currency currency
+                    on (currency.id = aml.currency_id)
             WHERE
                 rjqm.report_id = %s
         """
@@ -449,6 +485,14 @@ class ReportJournalQwebJournal(models.TransientModel):
     credit = fields.Float(
         digits=DIGITS,
     )
+    company_id = fields.Many2one(
+        comodel_name='res.company',
+        required=True,
+        ondelete='cascade'
+    )
+    currency_id = fields.Many2one(
+        comodel_name='res.currency',
+    )
 
 
 class ReportJournalQwebMove(models.TransientModel):
@@ -475,6 +519,11 @@ class ReportJournalQwebMove(models.TransientModel):
         inverse_name='report_move_id',
     )
     name = fields.Char()
+    company_id = fields.Many2one(
+        comodel_name='res.company',
+        required=True,
+        ondelete='cascade'
+    )
 
 
 class ReportJournalQwebMoveLine(models.TransientModel):
@@ -521,9 +570,24 @@ class ReportJournalQwebMoveLine(models.TransientModel):
     credit = fields.Float(
         digits=DIGITS,
     )
+    company_currency_id = fields.Many2one(
+        comodel_name='res.currency',
+    )
+    amount_currency = fields.Monetary(
+        currency_field='currency_id',
+    )
+    currency_id = fields.Many2one(
+        comodel_name='res.currency',
+    )
+    currency_name = fields.Char()
     taxes_description = fields.Char()
     tax_id = fields.Many2one(
         comodel_name='account.tax'
+    )
+    company_id = fields.Many2one(
+        comodel_name='res.company',
+        required=True,
+        ondelete='cascade'
     )
 
 
