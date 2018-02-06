@@ -10,18 +10,37 @@
                     <t t-set="display_currency" t-value="o.with_currency"/>
 
                     <div class="page">
-                        <t t-foreach="o.report_journal_ids" t-as="journal">
+                        <t t-if="o.group_option == 'none'">
                             <div class="page_break">
-                                <t t-call="account_financial_report_qweb.report_journal_qweb_journal"/>
+                                <t t-call="account_financial_report_qweb.report_journal_qweb_all"/>
                                 <br/>
-                                <t t-call="account_financial_report_qweb.report_journal_qweb_journal_taxes"/>
-                                <br/>
+                                <t t-call="account_financial_report_qweb.report_journal_qweb_all_taxes"/>
                             </div>
+                        </t>
+                        <t t-if="o.group_option == 'journal'">
+                            <t t-foreach="o.report_journal_ids" t-as="journal">
+                                <div class="page_break">
+                                    <t t-call="account_financial_report_qweb.report_journal_qweb_journal"/>
+                                    <br/>
+                                    <t t-call="account_financial_report_qweb.report_journal_qweb_journal_taxes"/>
+                                    <br/>
+                                </div>
+                            </t>
                         </t>
                     </div>
                 </t>
             </t>
         </t>
+    </template>
+
+    <template id="account_financial_report_qweb.report_journal_qweb_all">
+        <div class="act_as_table list_table" style="margin-top: 10px;"/>
+        <div class="act_as_table data_table" style="width: 1140px !important;">
+            <t t-call="account_financial_report_qweb.report_journal_qweb_journal_table_header"/>
+            <t t-foreach="o.report_move_ids" t-as="move">
+                <t t-call="account_financial_report_qweb.report_journal_qweb_move"/>
+            </t>
+        </div>
     </template>
 
     <template id="account_financial_report_qweb.report_journal_qweb_journal">
@@ -31,15 +50,15 @@
         </div>
 
         <div class="act_as_table data_table" style="width: 1140px !important;">
-            <t t-call="account_financial_report_qweb.report_journal_qweb_table_header"/>
-            <t t-call="account_financial_report_qweb.report_journal_first_line"/>
+            <t t-call="account_financial_report_qweb.report_journal_qweb_journal_table_header"/>
+            <t t-call="account_financial_report_qweb.report_journal_qweb_journal_first_line"/>
             <t t-foreach="journal.report_move_ids" t-as="move">
                 <t t-call="account_financial_report_qweb.report_journal_qweb_move"/>
             </t>
         </div>
     </template>
 
-    <template id="account_financial_report_qweb.report_journal_qweb_table_header">
+    <template id="account_financial_report_qweb.report_journal_qweb_journal_table_header">
         <div class="act_as_thead">
             <div class="act_as_row labels">
                 <div class="act_as_cell first_column"
@@ -93,7 +112,7 @@
         </div>
     </template>
 
-    <template id="account_financial_report_qweb.report_journal_first_line">
+    <template id="account_financial_report_qweb.report_journal_qweb_journal_first_line">
         <div class="act_as_row lines">
             <div class="act_as_cell"
                  name="entry"/>
@@ -257,6 +276,115 @@
             </div>
 
             <t t-foreach="journal.report_tax_line_ids" t-as="tax_line">
+                 <div class="act_as_row lines">
+                     <div class="act_as_cell left"
+                         name="tax_name">
+                        <span t-field="tax_line.tax_name"/>
+                     </div>
+                     <div class="act_as_cell left"
+                         name="tax_code">
+                        <span t-field="tax_line.tax_code"/>
+                     </div>
+                     <div class="act_as_cell amount"
+                         name="base_debit">
+                        <span t-field="tax_line.base_debit"/>
+                     </div>
+                     <div class="act_as_cell amount"
+                         name="base_credit">
+                        <span t-field="tax_line.base_credit"/>
+                     </div>
+                     <div class="act_as_cell amount"
+                         name="base_balance">
+                        <span t-field="tax_line.base_balance"/>
+                     </div>
+                     <div class="act_as_cell amount"
+                         name="tax_debit">
+                        <span t-field="tax_line.tax_debit"/>
+                     </div>
+                     <div class="act_as_cell amount"
+                         name="tax_credit">
+                        <span t-field="tax_line.tax_credit"/>
+                     </div>
+                     <div class="act_as_cell amount"
+                         name="tax_balance">
+                        <span t-field="tax_line.tax_balance"/>
+                     </div>
+                 </div>
+            </t>
+        </div>
+    </template>
+
+    <template id="account_financial_report_qweb.report_journal_qweb_all_taxes">
+        <b>Taxes summary</b>
+        <div class="act_as_table data_table" style="width: 1130px !important; padding-bottom:0px !important;">
+            <div class="act_as_thead">
+                <div class="act_as_row labels">
+                    <div class="act_as_cell first_column"
+                         name="name"
+                         style="width: 350px;">
+                        Name
+                    </div>
+                    <div class="act_as_cell"
+                         name="description"
+                         style="width: 150px;">
+                        Description
+                    </div>
+                    <div class="act_as_cell"
+                         name="base_amount"
+                         style="width: 315px !important;">
+                        Base Amount
+                    </div>
+                    <div class="act_as_cell"
+                         name="tax_amount"
+                         style="width: 315px !important;">
+                        Tax Amount
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="act_as_table data_table" style="width: 1130px !important; padding-top:0px !important">
+            <div class="act_as_row labels">
+                <div class="act_as_cell first_column"
+                     name="name"
+                     style="width: 350px;"/>
+                <div class="act_as_cell"
+                     name="description"
+                     style="width: 150px;"/>
+                <div class="act_as_cell"
+                     name="base_debit"
+                     style="width: 105px !important;">
+                    Debit
+                </div>
+                <div class="act_as_cell"
+                     name="base_credit"
+                     style="width: 105px !important;">
+                    Credit
+                </div>
+                <div class="act_as_cell"
+                     name="base_balance"
+                     style="width: 105px; !important">
+                    Balance
+                </div>
+                <div class="act_as_cell"
+                     name="tax_debit"
+                     style="width: 105px; !important">
+                    Debit
+                </div>
+                <div class="act_as_cell"
+                     name="tax_credit"
+                     style="width: 105px; !important">
+                    Credit
+                </div>
+                <div class="act_as_cell"
+                     name="tax_balance"
+                     style="width: 105px; !important">
+                    Balance
+                </div>
+            </div>
+
+            <t t-foreach="o.report_tax_line_ids" t-as="tax_line">
                  <div class="act_as_row lines">
                      <div class="act_as_cell left"
                          name="tax_name">

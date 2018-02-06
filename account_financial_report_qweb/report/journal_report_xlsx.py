@@ -178,8 +178,17 @@ class JournalXslx(abstract_report_xlsx.AbstractReportXslx):
         ]
 
     def _generate_report_content(self, workbook, report):
-        for report_journal in report.report_journal_ids:
-            self._generate_journal_content(workbook, report_journal)
+        group_option = report.group_option
+        if group_option == 'journal':
+            for report_journal in report.report_journal_ids:
+                self._generate_journal_content(workbook, report_journal)
+        elif group_option == 'none':
+            self._generate_no_group_content(workbook, report)
+
+    def _generate_no_group_content(self, workbook, report):
+        self._generate_moves_content(
+            workbook, report, "Report", report.report_move_ids)
+        self._generate_no_group_taxes_summary(workbook, report)
 
     def _generate_journal_content(self, workbook, report_journal):
         sheet_name = "%s (%s) - %s" % (
@@ -187,8 +196,28 @@ class JournalXslx(abstract_report_xlsx.AbstractReportXslx):
             report_journal.currency_id.name,
             report_journal.name,
         )
-        journal_sheet = self.add_sheet(workbook, sheet_name)
-        self.set_sheet(journal_sheet)
+        self._generate_moves_content(
+            workbook, report_journal.report_id, sheet_name,
+            report_journal.report_move_ids)
+        self._generate_journal_taxes_summary(workbook, report_journal)
+
+    def _generate_no_group_taxes_summary(self, workbook, report):
+        self._generate_taxes_summary(
+            workbook, report, "Tax Report", report.report_tax_line_ids)
+
+    def _generate_journal_taxes_summary(self, workbook, report_journal):
+        sheet_name = "Tax - %s (%s) - %s" % (
+            report_journal.code,
+            report_journal.currency_id.name,
+            report_journal.name,
+        )
+        report = report_journal.report_id
+        self._generate_taxes_summary(
+            workbook, report, sheet_name, report_journal.report_tax_line_ids)
+
+    def _generate_moves_content(self, workbook, report, sheet_name, moves):
+        report_sheet = self.add_sheet(workbook, sheet_name)
+        self.set_sheet(report_sheet)
         self._set_column_width()
 
         self.row_pos = 1
@@ -197,19 +226,12 @@ class JournalXslx(abstract_report_xlsx.AbstractReportXslx):
         self.row_pos += 2
 
         self.write_array_header()
-        for move in report_journal.report_move_ids:
+        for move in moves:
             for line in move.report_move_line_ids:
                 self.write_line(line)
             self.row_pos += 1
 
-        self._generate_journal_taxes_summary(workbook, report_journal)
-
-    def _generate_journal_taxes_summary(self, workbook, report_journal):
-        sheet_name = "Tax - %s (%s) - %s" % (
-            report_journal.code,
-            report_journal.currency_id.name,
-            report_journal.name,
-        )
+    def _generate_taxes_summary(self, workbook, report, sheet_name, tax_lines):
         tax_journal_sheet = self.add_sheet(workbook, sheet_name)
         self.set_sheet(tax_journal_sheet)
 
@@ -217,18 +239,17 @@ class JournalXslx(abstract_report_xlsx.AbstractReportXslx):
         self.write_array_title(sheet_name)
         self.row_pos += 2
 
-        journal_tax_columns = self._get_journal_tax_columns(
-            report_journal.report_id)
-        self._set_columns_width(journal_tax_columns)
+        tax_columns = self._get_journal_tax_columns(report)
+        self._set_columns_width(tax_columns)
 
-        for col_pos, column in journal_tax_columns.iteritems():
+        for col_pos, column in tax_columns.iteritems():
             self.sheet.write(
                 self.row_pos, col_pos, column['header'],
                 self.format_header_center
             )
         self.row_pos += 1
-        for tax_line in report_journal.report_tax_line_ids:
-            self._write_line(journal_tax_columns, tax_line)
+        for tax_line in tax_lines:
+            self._write_line(tax_columns, tax_line)
 
 
 JournalXslx(

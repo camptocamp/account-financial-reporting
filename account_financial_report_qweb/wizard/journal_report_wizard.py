@@ -49,6 +49,12 @@ class JournalReportWizard(models.TransientModel):
         default='move_name',
         required=True,
     )
+    group_option = fields.Selection(
+        selection='_get_group_options',
+        string="Group entries by",
+        default='journal',
+        required=True,
+    )
 
     @api.model
     def _get_move_targets(self):
@@ -63,6 +69,13 @@ class JournalReportWizard(models.TransientModel):
         return [
             ('move_name', _("Entry number")),
             ('date', _("Date")),
+        ]
+
+    @api.model
+    def _get_group_options(self):
+        return [
+            ('journal', _("Journal")),
+            ('none', _("No group")),
         ]
 
     @api.onchange('date_range_id')
@@ -91,6 +104,7 @@ class JournalReportWizard(models.TransientModel):
             'company_id': self.company_id.id,
             'journal_ids': [(6, 0, self.journal_ids.ids)],
             'sort_option': self.sort_option,
+            'group_option': self.group_option,
         }
 
     @api.multi

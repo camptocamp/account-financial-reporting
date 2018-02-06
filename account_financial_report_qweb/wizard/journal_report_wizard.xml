@@ -28,6 +28,7 @@
                     <group>
                         <field name="move_target" widget="radio" options="{'horizontal': true}"/>
                         <field name="sort_option"/>
+                        <field name="group_option"/>
                         <field name="with_currency"/>
                     </group>
                     <group/>

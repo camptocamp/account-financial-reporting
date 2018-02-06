@@ -32,6 +32,11 @@ class ReportJournalQweb(models.TransientModel):
         default='move_name',
         required=True,
     )
+    group_option = fields.Selection(
+        selection='_get_group_options',
+        default='journal',
+        required=True,
+    )
     journal_ids = fields.Many2many(
         comodel_name='account.journal',
         required=True,
@@ -40,8 +45,20 @@ class ReportJournalQweb(models.TransientModel):
         comodel_name='report_journal_qweb_journal',
         inverse_name='report_id',
     )
-    report_tax_line_ids = fields.One2many(
+    report_move_ids = fields.One2many(
+        comodel_name='report_journal_qweb_move',
+        inverse_name='report_id',
+    )
+    report_move_line_ids = fields.One2many(
+        comodel_name='report_journal_qweb_move_line',
+        inverse_name='report_id',
+    )
+    report_journal_tax_line_ids = fields.One2many(
         comodel_name='report_journal_qweb_journal_tax_line',
+        inverse_name='report_id',
+    )
+    report_tax_line_ids = fields.One2many(
+        comodel_name='report_journal_qweb_report_tax_line',
         inverse_name='report_id',
     )
     with_currency = fields.Boolean()
@@ -54,6 +71,10 @@ class ReportJournalQweb(models.TransientModel):
     def _get_sort_options(self):
         return self.env['journal.report.wizard']._get_sort_options()
 
+    @api.model
+    def _get_group_options(self):
+        return self.env['journal.report.wizard']._get_group_options()
+
     @api.multi
     def compute_data_for_report(self):
         self.ensure_one()
@@ -62,6 +83,9 @@ class ReportJournalQweb(models.TransientModel):
         self._inject_move_line_values()
         self._inject_journal_tax_values()
         self._update_journal_report_total_values()
+
+        if self.group_option == 'none':
+            self._inject_report_tax_values()
 
     @api.multi
     def refresh(self):
@@ -180,7 +204,7 @@ class ReportJournalQweb(models.TransientModel):
         if self.sort_option == 'move_name':
             order_by += " am.name"
         elif self.sort_option == 'date':
-            order_by += " am.date"
+            order_by += " am.date, am.name"
         return order_by
 
     @api.multi
@@ -297,6 +321,94 @@ class ReportJournalQweb(models.TransientModel):
             self.id,
         )
         self.env.cr.execute(sql, params)
+
+    @api.multi
+    def _inject_report_tax_values(self):
+        self.ensure_one()
+        sql_distinct_tax_id = """
+            SELECT
+                distinct(jrqjtl.tax_id)
+            FROM
+                report_journal_qweb_journal_tax_line jrqjtl
+            WHERE
+                jrqjtl.report_id = %s
+        """
+        self.env.cr.execute(sql_distinct_tax_id, (self.id,))
+        rows = self.env.cr.fetchall()
+        tax_ids = set([row[0] for row in rows])
+
+        sql = """
+            INSERT INTO report_journal_qweb_report_tax_line (
+                create_uid,
+                create_date,
+                report_id,
+                tax_id,
+                tax_name,
+                tax_code,
+                base_debit,
+                base_credit,
+                tax_debit,
+                tax_credit
+            )
+            SELECT
+                %s as create_uid,
+                NOW() as create_date,
+                %s as report_id,
+                %s as tax_id,
+                at.name as tax_name,
+                at.description as tax_code,
+                (
+                    SELECT sum(base_debit)
+                    FROM report_journal_qweb_journal_tax_line jrqjtl2
+                    WHERE jrqjtl2.report_id = %s
+                    AND jrqjtl2.tax_id = %s
+                ) as base_debit,
+                (
+                    SELECT sum(base_credit)
+                    FROM report_journal_qweb_journal_tax_line jrqjtl2
+                    WHERE jrqjtl2.report_id = %s
+                    AND jrqjtl2.tax_id = %s
+                ) as base_credit,
+                (
+                    SELECT sum(tax_debit)
+                    FROM report_journal_qweb_journal_tax_line jrqjtl2
+                    WHERE jrqjtl2.report_id = %s
+                    AND jrqjtl2.tax_id = %s
+                ) as tax_debit,
+                (
+                    SELECT sum(tax_credit)
+                    FROM report_journal_qweb_journal_tax_line jrqjtl2
+                    WHERE jrqjtl2.report_id = %s
+                    AND jrqjtl2.tax_id = %s
+                ) as tax_credit
+            FROM
+                report_journal_qweb_journal_tax_line jrqjtl
+            LEFT JOIN
+                account_tax at
+                    on (at.id = jrqjtl.tax_id)
+            WHERE
+                jrqjtl.report_id = %s
+            AND
+                jrqjtl.tax_id = %s
+        """
+
+        for tax_id in tax_ids:
+            params = (
+                self.env.uid,
+                self.id,
+                tax_id,
+                self.id,
+                tax_id,
+                self.id,
+                tax_id,
+                self.id,
+                tax_id,
+                self.id,
+                tax_id,
+                self.id,
+                tax_id,
+            )
+            self.env.cr.execute(sql, params)
 
     @api.multi
     def _inject_journal_tax_values(self):
@@ -591,20 +703,15 @@ class ReportJournalQwebMoveLine(models.TransientModel):
     )
 
 
-class ReportJournalQwebJournalTaxLine(models.TransientModel):
+class ReportJournalQwebReportTaxLine(models.TransientModel):
 
-    _name = 'report_journal_qweb_journal_tax_line'
+    _name = 'report_journal_qweb_report_tax_line'
     _order = 'tax_code'
 
     report_id = fields.Many2one(
         comodel_name='report_journal_qweb',
         required=True,
         ondelete='cascade'
-    )
-    report_journal_id = fields.Many2one(
-        comodel_name='report_journal_qweb_journal',
-        required=True,
-        ondelete='cascade',
     )
     tax_id = fields.Many2one(
         comodel_name='account.tax'
@@ -641,3 +748,16 @@ class ReportJournalQwebJournalTaxLine(models.TransientModel):
     def _compute_tax_balance(self):
         for rec in self:
             rec.tax_balance = rec.tax_debit - rec.tax_credit
+
+
+class ReportJournalQwebJournalTaxLine(models.TransientModel):
+
+    _name = 'report_journal_qweb_journal_tax_line'
+    _inherit = 'report_journal_qweb_report_tax_line'
+    _order = 'tax_code'
+
+    report_journal_id = fields.Many2one(
+        comodel_name='report_journal_qweb_journal',
+        required=True,
+        ondelete='cascade',
+    )

@@ -120,7 +120,7 @@ class TestJournalReport(TransactionCase):
         }
         return self.MoveObj.create(move_vals)
 
-    def check_report_debit_credit(
+    def check_report_journal_debit_credit(
             self, report, expected_debit, expected_credit):
         self.assertEqual(
             expected_debit,
@@ -132,7 +132,7 @@ class TestJournalReport(TransactionCase):
             sum([journal.credit for journal in report.report_journal_ids])
         )
 
-    def check_report_debit_credit_taxes(
+    def check_report_journal_debit_credit_taxes(
             self, report,
             expected_base_debit, expected_base_credit,
             expected_tax_debit, expected_tax_credit):
@@ -140,25 +140,29 @@ class TestJournalReport(TransactionCase):
         self.assertEqual(
             expected_base_debit,
             sum([
-                journal.base_debit for journal in report.report_tax_line_ids
+                journal.base_debit
+                for journal in report.report_journal_tax_line_ids
             ])
         )
         self.assertEqual(
             expected_base_credit,
             sum([
-                journal.base_credit for journal in report.report_tax_line_ids
+                journal.base_credit
+                for journal in report.report_journal_tax_line_ids
             ])
         )
         self.assertEqual(
             expected_tax_debit,
             sum([
-                journal.tax_debit for journal in report.report_tax_line_ids
+                journal.tax_debit
+                for journal in report.report_journal_tax_line_ids
             ])
         )
         self.assertEqual(
             expected_tax_credit,
             sum([
-                journal.tax_credit for journal in report.report_tax_line_ids
+                journal.tax_credit
+                for journal in report.report_journal_tax_line_ids
             ])
         )
 
@@ -182,34 +186,34 @@ class TestJournalReport(TransactionCase):
         })
         report.compute_data_for_report()
 
-        self.check_report_debit_credit(report, 100, 100)
+        self.check_report_journal_debit_credit(report, 100, 100)
 
         move3 = self._add_move(
             today_date, self.journal_sale,
             0, 100, 100, 0)
 
         report.refresh()
-        self.check_report_debit_credit(report, 200, 200)
+        self.check_report_journal_debit_credit(report, 200, 200)
 
         report.move_target = 'posted'
         report.refresh()
-        self.check_report_debit_credit(report, 0, 0)
+        self.check_report_journal_debit_credit(report, 0, 0)
 
         move1.post()
         report.refresh()
-        self.check_report_debit_credit(report, 100, 100)
+        self.check_report_journal_debit_credit(report, 100, 100)
 
         move2.post()
         report.refresh()
-        self.check_report_debit_credit(report, 100, 100)
+        self.check_report_journal_debit_credit(report, 100, 100)
 
         move3.post()
         report.refresh()
-        self.check_report_debit_credit(report, 200, 200)
+        self.check_report_journal_debit_credit(report, 200, 200)
 
         report.date_from = self.previous_fy_date_start
         report.refresh()
-        self.check_report_debit_credit(report, 300, 300)
+        self.check_report_journal_debit_credit(report, 300, 300)
 
     def test_02_test_taxes_out_invoice(self):
         invoice_values = {
@@ -246,10 +250,10 @@ class TestJournalReport(TransactionCase):
         })
         report.compute_data_for_report()
 
-        self.check_report_debit_credit(report, 250, 250)
-        self.check_report_debit_credit_taxes(report, 0, 300, 0, 50)
+        self.check_report_journal_debit_credit(report, 250, 250)
+        self.check_report_journal_debit_credit_taxes(report, 0, 300, 0, 50)
 
-    def test_02_test_taxes_in_invoice(self):
+    def test_03_test_taxes_in_invoice(self):
         invoice_values = {
             'journal_id': self.journal_sale.id,
             'partner_id': self.partner_2.id,
@@ -284,5 +288,5 @@ class TestJournalReport(TransactionCase):
         })
         report.compute_data_for_report()
 
-        self.check_report_debit_credit(report, 250, 250)
-        self.check_report_debit_credit_taxes(report, 300, 0, 50, 0)
+        self.check_report_journal_debit_credit(report, 250, 250)
+        self.check_report_journal_debit_credit_taxes(report, 300, 0, 50, 0)
