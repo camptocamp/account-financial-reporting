@@ -62,6 +62,7 @@ class ReportJournalQweb(models.TransientModel):
         inverse_name='report_id',
     )
     with_currency = fields.Boolean()
+    with_account_name = fields.Boolean()
 
     @api.model
     def _get_move_targets(self):

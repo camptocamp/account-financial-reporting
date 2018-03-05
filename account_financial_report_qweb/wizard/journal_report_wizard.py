@@ -55,6 +55,9 @@ class JournalReportWizard(models.TransientModel):
         default='journal',
         required=True,
     )
+    with_account_name = fields.Boolean(
+        default=False,
+    )
 
     @api.model
     def _get_move_targets(self):
@@ -105,6 +108,7 @@ class JournalReportWizard(models.TransientModel):
             'journal_ids': [(6, 0, self.journal_ids.ids)],
             'sort_option': self.sort_option,
             'group_option': self.group_option,
+            'with_account_name': self.with_account_name,
         }
 
     @api.multi

@@ -21,65 +21,80 @@ class JournalXslx(abstract_report_xlsx.AbstractReportXslx):
         return _('Journal')
 
     def _get_report_columns(self, report):
-        columns = {
-            0: {
+        columns = [
+            {
                 'header': _('Entry'),
                 'field': 'entry',
                 'width': 18
             },
-            1: {
+            {
                 'header': _('Date'),
                 'field': 'date',
                 'width': 11
             },
-            2: {
+            {
                 'header': _('Account'),
                 'field': 'account_code',
                 'width': 9
             },
-            3: {
+        ]
+
+        if report.with_account_name:
+            columns.append({
+                'header': _('Account Name'),
+                'field': 'account',
+                'width': 15
+            })
+
+        columns += [
+            {
                 'header': _('Partner'),
                 'field': 'partner',
                 'width': 25
             },
-            4: {
+            {
                 'header': _('Ref - Label'),
                 'field': 'label',
                 'width': 40
             },
-            5: {
+            {
                 'header': _('Taxes'),
                 'field': 'taxes_description',
                 'width': 11
             },
-            6: {
+            {
                 'header': _('Debit'),
                 'field': 'debit',
                 'type': 'amount',
                 'width': 14,
             },
-            7: {
+            {
                 'header': _('Credit'),
                 'field': 'credit',
                 'type': 'amount',
                 'width': 14
-            },
-        }
+            }
+        ]
+
         if report.with_currency:
-            columns.update({
-                8: {
+            columns += [
+                {
                     'header': _('Amount Currency'),
                     'field': 'amount_currency',
                     'type': 'amount',
                     'width': 14
                 },
-                9: {
+                {
                     'header': _('Currency'),
                     'field': 'currency_name',
                     'width': 14
                 }
-            })
-        return columns
+            ]
+
+        columns_as_dict = {}
+        for i, column in enumerate(columns):
+            columns_as_dict[i] = column
+        return columns_as_dict
 
     def _get_journal_tax_columns(self, report):
         return {

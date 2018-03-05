@@ -8,6 +8,7 @@
                     <t t-set="title">Journal Ledger</t>
                     <t t-set="company_name" t-value="o.company_id.name"/>
                     <t t-set="display_currency" t-value="o.with_currency"/>
+                    <t t-set="display_account_name" t-value="o.with_account_name"/>
 
                     <div class="page">
                         <t t-if="o.group_option == 'none'">
@@ -59,6 +60,23 @@
     </template>
 
     <template id="account_financial_report_qweb.report_journal_qweb_journal_table_header">
+        <t t-if="not display_account_name">
+            <t t-set="account_column_style">
+                width: 75px;
+            </t>
+            <t t-set="partner_column_style">
+                width: 160px;
+            </t>
+        </t>
+        <t t-else="">
+            <t t-set="account_column_style">
+                width: 125px;
+            </t>
+            <t t-set="partner_column_style">
+                width: 110px;
+            </t>
+        </t>
+
         <div class="act_as_thead">
             <div class="act_as_row labels">
                 <div class="act_as_cell first_column"
@@ -72,13 +90,11 @@
                     Date
                 </div>
                 <div class="act_as_cell"
-                     name="account"
-                     style="width: 75px;">
+                     name="account" t-att-style="account_column_style">
                     Account
                 </div>
                 <div class="act_as_cell"
-                     name="partner"
-                     style="width: 160px;">
+                     name="partner" t-att-style="partner_column_style">
                     Partner
                 </div>
                 <div class="act_as_cell"
@@ -170,6 +186,9 @@
         <div class="act_as_cell left"
              name="account">
             <span t-field="move_line.account_code"/>
+            <span t-if="display_account_name">
+                - <span t-field="move_line.account"/>
+            </span>
         </div>
         <div class="act_as_cell left"
              name="partner">
