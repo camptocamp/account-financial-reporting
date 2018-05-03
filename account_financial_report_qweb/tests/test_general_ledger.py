@@ -38,7 +38,7 @@ class TestGeneralLedger(abstract_test.AbstractTest):
         }
 
     def _getAdditionalFiltersToBeTested(self):
-        return [
+        additional_filters = [
             {'only_posted_moves': True},
             {'hide_account_balance_at_0': True},
             {'centralize': True},
@@ -51,6 +51,37 @@ class TestGeneralLedger(abstract_test.AbstractTest):
                 'centralize': True
             },
         ]
+
+        # Add `show_analytic_tags` filter on each cases
+        additional_filters_with_show_tags = []
+        for additional_filter in additional_filters:
+            additional_filter['show_analytic_tags'] = True
+            additional_filters_with_show_tags.append(
+                additional_filter
+            )
+        additional_filters += additional_filters_with_show_tags
+
+        # Add `filter_analytic_tag_ids` filter on each cases
+        analytic_tag = self.env['account.analytic.tag'].create({
+            'name': 'TEST tag'
+        })
+        # Define all move lines on this tag
+        # (this test just check with the all filters, all works technically)
+        move_lines = self.env['account.move.line'].search([])
+        move_lines.write({
+            'analytic_tag_ids': [(6, False, analytic_tag.ids)],
+        })
+        additional_filters_with_filter_tags = []
+        for additional_filter in additional_filters:
+            additional_filter['filter_analytic_tag_ids'] = [
+                (6, False, analytic_tag.ids)
+            ]
+            additional_filters_with_filter_tags.append(
+                additional_filter
+            )
+        additional_filters += additional_filters_with_filter_tags
+
+        return additional_filters
 
 
 class TestGeneralLedgerReport(TransactionCase):
