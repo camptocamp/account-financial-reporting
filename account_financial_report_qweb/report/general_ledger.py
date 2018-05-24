@@ -1510,7 +1510,7 @@ FROM
                 account_analytic_tag t
                     ON tml.account_analytic_tag_id = t.id
             WHERE
-                ra.report_id = %s
+                ra.report_id = %(report_id)s
             GROUP BY
                 rml.id,
                 ml.id
@@ -1538,7 +1538,7 @@ FROM
                 account_analytic_tag t
                     ON tml.account_analytic_tag_id = t.id
             WHERE
-                ra.report_id = %s
+                ra.report_id = %(report_id)s
             GROUP BY
                 rml.id,
                 ml.id
@@ -1547,7 +1547,9 @@ FROM
 WHERE
     report_general_ledger_qweb_move_line.id = tags_values.report_id
         """
-        params = (self.id,) * 2
+        params = {
+            'report_id': self.id,
+        }
         self.env.cr.execute(query_update_analytic_tags, params)
 
     def _get_unaffected_earnings_account_sub_subquery_sum_initial(
