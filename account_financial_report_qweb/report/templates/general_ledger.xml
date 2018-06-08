@@ -6,6 +6,7 @@
             <t t-foreach="docs" t-as="o">
                 <!-- Saved flag fields into variables, used to define columns display -->
                 <t t-set="show_cost_center" t-value="o.show_cost_center"/>
+                <t t-set="show_analytic_tags" t-value="o.show_analytic_tags"/>
                 <t t-set="has_second_currency" t-value="o.has_second_currency"/>
 
                 <t t-call="account_financial_report_qweb.internal_layout">
@@ -75,6 +76,7 @@
                 <div class="act_as_cell">Target moves filter</div>
                 <div class="act_as_cell">Account balance at 0 filter</div>
                 <div class="act_as_cell">Centralize filter</div>
+                <div class="act_as_cell">Show analytic tags</div>
             </div>
             <div class="act_as_row">
                 <div class="act_as_cell">
@@ -92,6 +94,10 @@
                     <t t-if="o.centralize">Yes</t>
                     <t t-if="not o.centralize">No</t>
                 </div>
+                <div class="act_as_cell">
+                    <t t-if="o.show_analytic_tags">Yes</t>
+                    <t t-if="not o.show_analytic_tags">No</t>
+                </div>
             </div>
         </div>
     </template>
@@ -103,35 +109,39 @@
             <div class="act_as_thead">
                 <div class="act_as_row labels">
                     <!--## date-->
-                    <div class="act_as_cell first_column" style="width: 60px;">Date</div>
+                    <div class="act_as_cell first_column" t-att-style="'width: '+('55' if show_cost_center and show_analytic_tags else '60')+'px;'">Date</div>
                     <!--## move-->
-                    <div class="act_as_cell" style="width: 100px;">Entry</div>
+                    <div class="act_as_cell" t-att-style="'width: '+('90' if show_cost_center and show_analytic_tags else '100')+'px;'">Entry</div>
                     <!--## journal-->
                     <div class="act_as_cell" style="width: 40px;">Journal</div>
                     <!--## account code-->
-                    <div class="act_as_cell" style="width: 50px;">Account</div>
-                    <!--## account code-->
-                    <div class="act_as_cell" style="width: 90px;">Taxes</div>
+                    <div class="act_as_cell" t-att-style="'width: '+('45' if show_cost_center and show_analytic_tags else '50')+'px;'">Account</div>
+                    <!--## taxes-->
+                    <div class="act_as_cell" t-att-style="'width: '+('80' if show_cost_center and show_analytic_tags else '90')+'px;'">Taxes</div>
                     <!--## partner-->
-                    <div class="act_as_cell" style="width: 140px;">Partner</div>
+                    <div class="act_as_cell" t-att-style="'width: '+('110' if show_cost_center and show_analytic_tags else ('120' if not show_analytic_tags else '140'))+'px;'">Partner</div>
                     <!--## ref - label-->
-                    <div class="act_as_cell" style="width: 250px;">Ref - Label</div>
+                    <div class="act_as_cell" t-att-style="'width: '+('220' if show_cost_center and show_analytic_tags else ('225' if not show_analytic_tags else '240'))+'px;'">Ref - Label</div>
                     <t t-if="show_cost_center">
                         <!--## cost_center-->
-                        <div class="act_as_cell" style="width: 100px;">Cost center</div>
+                        <div class="act_as_cell" style="width: 95px;">Cost center</div>
+                    </t>
+                    <t t-if="show_analytic_tags">
+                        <!--## analytic tags-->
+                        <div class="act_as_cell" style="width: 60px;">Tags</div>
                     </t>
                     <!--## matching_number-->
                     <div class="act_as_cell" style="width: 25px;">Rec.</div>
                     <!--## debit-->
-                    <div class="act_as_cell amount" style="width: 75px;">Debit</div>
+                    <div class="act_as_cell amount" t-att-style="'width: '+('70' if show_cost_center and show_analytic_tags else '75')+'px;'">Debit</div>
                     <!--## credit-->
-                    <div class="act_as_cell amount" style="width: 75px;">Credit</div>
+                    <div class="act_as_cell amount" t-att-style="'width: '+('70' if show_cost_center and show_analytic_tags else '75')+'px;'">Credit</div>
                     <!--## balance cumulated-->
-                    <div class="act_as_cell amount" style="width: 75px;">Cumul. Bal.</div>
+                    <div class="act_as_cell amount" t-att-style="'width: '+('70' if show_cost_center and show_analytic_tags else '75')+'px;'">Cumul. Bal.</div>
                     <!--## currency_name-->
                     <div class="act_as_cell" style="width: 35px;">Cur.</div>
                     <!--## amount_currency-->
-                    <div class="act_as_cell amount" style="width: 75px;">Amount cur.</div>
+                    <div class="act_as_cell amount" t-att-style="'width: '+('70' if show_cost_center and show_analytic_tags else '75')+'px;'">Amount cur.</div>
                 </div>
             </div>
 
@@ -153,6 +163,10 @@
                 <div class="act_as_cell amount">Initial balance</div>
                 <t t-if="show_cost_center">
                     <!--## cost_center-->
+                    <div class="act_as_cell"></div>
+                </t>
+                <t t-if="show_analytic_tags">
+                    <!--## analytic tags-->
                     <div class="act_as_cell"></div>
                 </t>
                 <!--## matching_number-->
@@ -197,6 +211,10 @@
                         <!--## cost_center-->
                         <div class="act_as_cell left"><span t-field="line.cost_center"/></div>
                     </t>
+                    <t t-if="show_analytic_tags">
+                        <!--## analytic tags-->
+                        <div class="act_as_cell left"><span t-field="line.tags"/></div>
+                    </t>
                     <!--## matching_number-->
                     <div class="act_as_cell"><span t-field="line.matching_number"/></div>
                     <!--## debit-->
@@ -227,33 +245,37 @@
                 <!--## date-->
                 <t t-if='type == "account_type"'>
                     <div class="act_as_cell first_column" style="width: 380px;"><span t-field="account_or_partner_object.code"/> - <span t-field="account_or_partner_object.name"/></div>
-                    <div class="act_as_cell right" style="width: 290px;">Ending balance</div>
+                    <div class="act_as_cell right" t-att-style="'width: '+('260' if show_cost_center and show_analytic_tags else ('295' if not show_analytic_tags else '330'))+'px;'">Ending balance</div>
                 </t>
                 <t t-if='type == "partner_type"'>
                     <div class="act_as_cell first_column" style="width: 380px;"></div>
-                    <div class="act_as_cell right" style="width: 290px;">Partner ending balance</div>
+                    <div class="act_as_cell right" t-att-style="'width: '+('260' if show_cost_center and show_analytic_tags else ('295' if not show_analytic_tags else '330'))+'px;'">Partner ending balance</div>
                 </t>
                 <t t-if="show_cost_center">
                     <!--## cost_center-->
-                    <div class="act_as_cell" style="width: 100px;"></div>
+                    <div class="act_as_cell" style="width: 95px;"></div>
+                </t>
+                <t t-if="show_analytic_tags">
+                    <!--## analytic tags-->
+                    <div class="act_as_cell" style="width: 60px;"></div>
                 </t>
                 <!--## matching_number-->
                 <div class="act_as_cell" style="width: 25px;"></div>
                 <!--## debit-->
-                <div class="act_as_cell amount" style="width: 75px;"><span t-field="account_or_partner_object.final_debit"/></div>
+                <div class="act_as_cell amount" t-att-style="'width: '+('70' if show_cost_center and show_analytic_tags else '75')+'px;'"><span t-field="account_or_partner_object.final_debit"/></div>
                 <!--## credit-->
-                <div class="act_as_cell amount" style="width: 75px;"><span t-field="account_or_partner_object.final_credit"/></div>
+                <div class="act_as_cell amount" t-att-style="'width: '+('70' if show_cost_center and show_analytic_tags else '75')+'px;'"><span t-field="account_or_partner_object.final_credit"/></div>
                 <!--## balance cumulated-->
-                <div class="act_as_cell amount" style="width: 75px; padding-right: 1px;"><span t-field="account_or_partner_object.final_balance"/></div>
+                <div class="act_as_cell amount" t-att-style="'width: '+('70' if show_cost_center and show_analytic_tags else '75')+'px; padding-right: 1px;'"><span t-field="account_or_partner_object.final_balance"/></div>
                 <!--## currency_name-->
                 <div class="act_as_cell" style="width: 35px;"><span t-field="account_or_partner_object.currency_name"/></div>
                 <t t-if="account_or_partner_object.currency_name">
                     <!--## balance_currency-->
-                    <div class="act_as_cell amount" style="width: 75px;"><span t-field="account_or_partner_object.final_balance_foreign_currency"/></div>
+                    <div class="act_as_cell amount" t-att-style="'width: '+('70' if show_cost_center and show_analytic_tags else '75')+'px;'"><span t-field="account_or_partner_object.final_balance_foreign_currency"/></div>
                 </t>
                 <t t-if="not account_or_partner_object.currency_name">
                     <!--## balance_currency-->
-                    <div class="act_as_cell" style="width: 75px;"/>
+                    <div class="act_as_cell" t-att-style="'width: '+('70' if show_cost_center and show_analytic_tags else '75')+'px;'"/>
                 </t>
             </div>
         </div>
