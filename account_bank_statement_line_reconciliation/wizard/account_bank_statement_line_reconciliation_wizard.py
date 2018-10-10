@@ -22,17 +22,17 @@ class AccountBankStatementLineReconciliationWizard(models.TransientModel):
                 msg = _("Please only select Journal entries "
                         "that belongs to the same bank journal")
                 raise ValidationError(msg)
-
+            account_move_line_ids = account_move_ids.mapped('line_ids')
             journal_id = journal_ids[0]
 
-        return account_move_ids, journal_id
+        return account_move_ids, journal_id, account_move_line_ids
 
     def _default_statement_line_ids(self):
-        account_move_ids, __ = self._account_move_ids_and_journal_id()
+        account_move_ids, __, __ = self._account_move_ids_and_journal_id()
         return account_move_ids.mapped('statement_line_id')
 
     def _domain_new_statement_line_id(self):
-        __, journal_id = self._account_move_ids_and_journal_id()
+        __, journal_id, __ = self._account_move_ids_and_journal_id()
 
         if journal_id:
             self.env.cr.execute("""
@@ -60,8 +60,12 @@ class AccountBankStatementLineReconciliationWizard(models.TransientModel):
 
     @api.multi
     def set_new_statement_line_value(self):
-        account_move_ids, __ = self._account_move_ids_and_journal_id()
+        account_move_ids, __, account_move_line_ids = \
+            self._account_move_ids_and_journal_id()
         account_move_ids.write({
             'statement_line_id': self.new_statement_line_id.id,
+        })
+        account_move_line_ids.write({
+            'statement_id': self.new_statement_line_id.statement_id.id,
         })
         return {}
