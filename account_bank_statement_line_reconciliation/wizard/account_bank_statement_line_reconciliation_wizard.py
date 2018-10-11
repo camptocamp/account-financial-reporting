@@ -37,10 +37,9 @@ class AccountBankStatementLineReconciliationWizard(models.TransientModel):
 
         if journal_id:
             self.env.cr.execute("""
-                SELECT DISTINCT statement_line_id
-                FROM account_move
-                WHERE journal_id = %s AND statement_line_id NOTNULL
-            """, [journal_id.id])
+            SELECT absl.id from account_bank_statement_line as absl
+            JOIN account_bank_statement as acbs on acbs.id = absl.statement_id
+            WHERE acbs.journal_id = %s;""", [journal_id.id])
             statement_line_ids = [r[0] for r in self.env.cr.fetchall()]
 
             return "[('id','in',{ids})]".format(ids=statement_line_ids)
