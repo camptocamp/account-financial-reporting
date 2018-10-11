@@ -12,6 +12,7 @@ class AccountBankStatementLineReconciliationWizard(models.TransientModel):
     def _account_move_ids_and_journal_id(self):
         ids = self._context.get('active_ids')
         account_move_ids = self.env['account.move']
+        account_move_line_ids = self.env['account.move.line']
         journal_id = self.env['account.journal']
         if ids:
             account_move_ids = account_move_ids.browse(ids)
