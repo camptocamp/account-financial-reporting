@@ -17,6 +17,31 @@ No additional configuration required
 Usage
 =====
 
+This module is for you if you work on Odoo enterprise and if messed up the bank reconcile report.
+
+The bank reconciliation report is accessible from the hyperlink 'Difference' which apprears on bank journals cards when the GL balance differs from the bank statement balance.
+
+There are 2 SQL requests launched from field filter (from bank reconcile view) :
+
+1 - Blue lines appears if account_move_lines have these values:
+
+statement_id = false
+AND payment_id = true
+AND account_id = current bank
+-> This means that if you post a payment journal entry manually (meaning that you do not use the register payment button) the payment_id will not be populated then your entry will not be "match-able" → your are stuck -> so you need this module
+
+Same issue in case of migration of payment entries with no payment_id
+
+
+2 - If 1st request is not applicable then Odoo will look up for account_move_lines with:
+
+reconcile_id = false
+account_id = flagged as 'Allow reconciliation" = true
+excluding the line in the move with the bank account.
+-> This means that is you have created entries on a reconciliable account but you never reconcile it (ie: a cut-off entry or a correction) this line will appear for ever in the list of possible match-> so you may need this module to clean it up.
+
+
+
 To use this module, you need to:
 
 #. Go to Accounting > Adviser > Journal Entries
@@ -24,6 +49,10 @@ To use this module, you need to:
 #. Press 'Action > Bank reconcile report change'
 #. Select required value in 'New value' field. Leave empty if you want to set empty value.
 #. Press 'Set value'
+
+Doing this, you will create/delete the link between Journal entry and bank statement lines so will make do corrctions on the bank reconcile report that would be impossible to do through the Odoo interface.
+
+
 
 .. image:: https://odoo-community.org/website/image/ir.attachment/5784_f2813bd/datas
    :alt: Try me on Runbot
