@@ -17,11 +17,11 @@ No additional configuration required
 Usage
 =====
 
-This module is for you if you work on Odoo enterprise and if messed up the bank reconcile report.
+This module is for you if you work with Odoo enterprise and you if you messed up the bank reconcile report.
 
 The bank reconciliation report is accessible from the hyperlink 'Difference' which apprears on bank journals cards when the GL balance differs from the bank statement balance.
 
-There are 2 SQL requests launched from field filter (from bank reconcile view) :
+There are only 2 situation handle from field filter (from bank reconcile view) but there are more in real life:
 
 1 - Blue lines appears if account_move_lines have these values:
 
@@ -50,7 +50,7 @@ To use this module, you need to:
 #. Select required value in 'New value' field. Leave empty if you want to set empty value.
 #. Press 'Set value'
 
-Doing this, you will create/delete the link between Journal entry and bank statement lines so will make do corrctions on the bank reconcile report that would be impossible to do through the Odoo interface.
+By doing this, you will create/delete the link between Journal entry and bank statement lines hence you will make corrections on the bank reconcile report which would be impossible to do through the Odoo interface.
 
 
 
