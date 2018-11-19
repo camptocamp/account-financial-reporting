@@ -32,19 +32,6 @@ class AccountBankStatementLineReconciliationWizard(models.TransientModel):
         account_move_ids, __, __ = self._account_move_ids_and_journal_id()
         return account_move_ids.mapped('statement_line_id')
 
-    def _domain_new_statement_line_id(self):
-        __, journal_id, __ = self._account_move_ids_and_journal_id()
-
-        if journal_id:
-            self.env.cr.execute("""
-            SELECT absl.id from account_bank_statement_line as absl
-            JOIN account_bank_statement as acbs on acbs.id = absl.statement_id
-            WHERE acbs.journal_id = %s;""", [journal_id.id])
-            statement_line_ids = [r[0] for r in self.env.cr.fetchall()]
-
-            return "[('id','in',{ids})]".format(ids=statement_line_ids)
-        return "[]"
-
     statement_line_ids = fields.One2many(
         'account.bank.statement.line',
         string=_('Current values'),
@@ -54,8 +41,7 @@ class AccountBankStatementLineReconciliationWizard(models.TransientModel):
 
     new_statement_line_id = fields.Many2one(
         'account.bank.statement.line',
-        string=_('New value'),
-        domain=_domain_new_statement_line_id
+        string=_('New value')
     )
 
     @api.multi
