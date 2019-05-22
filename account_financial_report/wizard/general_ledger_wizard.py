@@ -91,8 +91,8 @@ class GeneralLedgerReportWizard(models.TransientModel):
     def _init_date_from(self):
         """set start date to begin of current year if fiscal year running"""
         today = fields.Date.context_today(self)
-        cur_month = today.month
-        cur_day = today.day
+        cur_month = fields.Date.from_string(today).month
+        cur_day = fields.Date.from_string(today).day
         last_fsc_month = self.env.user.company_id.fiscalyear_last_month
         last_fsc_day = self.env.user.company_id.fiscalyear_last_day
 
