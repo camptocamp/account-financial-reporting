@@ -198,7 +198,7 @@
                                t-att-data-res-model="'account.move.line'"
                                class="o_account_financial_reports_web_action_monetary_multi"
                                style="color: black;">
-                            <t t-raw="account_or_partner_object.initial_debit"/></a>
+                            <t t-raw="account_or_partner_object.initial_debit" t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/></a>
                         </span>
                     </t>
                     <t t-if="type == 'partner_type'">
@@ -228,7 +228,7 @@
                                t-att-data-res-model="'account.move.line'"
                                class="o_account_financial_reports_web_action_monetary_multi"
                                style="color: black;">
-                            <t t-raw="account_or_partner_object.initial_credit"/></a>
+                            <t t-raw="account_or_partner_object.initial_credit" t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/></a>
                         </span>
                     </t>
                     <t t-if="type == 'partner_type'">
@@ -242,7 +242,7 @@
                                t-att-data-res-model="'account.move.line'"
                                class="o_account_financial_reports_web_action_monetary_multi"
                                style="color: black;">
-                            <t t-raw="account_or_partner_object.initial_credit"/></a>
+                            <t t-raw="account_or_partner_object.initial_credit" t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/></a>
                         </span>
                     </t>
                 </div>
@@ -257,7 +257,7 @@
                                t-att-data-res-model="'account.move.line'"
                                class="o_account_financial_reports_web_action_monetary_multi"
                                style="color: black;">
-                            <t t-raw="account_or_partner_object.initial_balance"/></a>
+                            <t t-raw="account_or_partner_object.initial_balance" t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/></a>
                         </span>
                     </t>
                     <t t-if="type == 'partner_type'">
@@ -270,7 +270,7 @@
                                t-att-data-res-model="'account.move.line'"
                                class="o_account_financial_reports_web_action_monetary_multi"
                                style="color: black;">
-                            <t t-raw="account_or_partner_object.initial_balance"/></a>
+                            <t t-raw="account_or_partner_object.initial_balance" t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/></a>
                         </span>
                     </t>
                 </div>
@@ -327,7 +327,7 @@
                                class="o_account_financial_reports_web_action"
                                style="color: black;">
                             <!--## We don't use t-field because it throws an error on click -->
-                                <t t-esc="line.date" t-options="{'widget': 'date', 'format': 'd/MM'}"/></a>
+                                <t t-esc="line.date" t-options="{'widget': 'date', 'format': 'dd/MM/YY'}"/></a>
                         </span>
                     </div>
                     <!--## move-->
@@ -420,7 +420,7 @@
                                t-att-data-res-model="res_model"
                                class="o_account_financial_reports_web_action_monetary"
                                style="color: black;">
-                                <t t-raw="line.debit"/></a>
+                                <t t-raw="line.debit" t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/></a>
                         </span>
                     </div>
                     <!--## credit-->
@@ -431,7 +431,7 @@
                                t-att-data-res-model="res_model"
                                class="o_account_financial_reports_web_action_monetary"
                                style="color: black;">
-                                <t t-raw="line.credit"/></a>
+                                <t t-raw="line.credit" t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/></a>
                         </span>
                     </div>
 
@@ -443,7 +443,7 @@
                                t-att-data-res-model="res_model"
                                class="o_account_financial_reports_web_action_monetary"
                                style="color: black;">
-                                <t t-raw="line.cumul_balance"/></a>
+                                <t t-raw="line.cumul_balance" t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/></a>
                         </span>
                     </div>
                     <t t-if="foreign_currency">
@@ -460,7 +460,7 @@
                                        t-att-data-res-model="res_model"
                                        class="o_account_financial_reports_web_action"
                                        style="color: black;">
-                                        <t t-raw="line.amount_currency"/></a>
+                                        <t t-raw="line.amount_currency" t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/></a>
                                 </span>
                             </div>
                         </t>
@@ -504,15 +504,15 @@
                 <div class="act_as_cell" style="width: 2.41%;"/>
                 <!--## debit-->
                 <div class="act_as_cell amount" style="width: 6.02%;">
-                    <span t-field="account_or_partner_object.final_debit"/>
+                    <span t-field="account_or_partner_object.final_debit"  t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/>
                 </div>
                 <!--## credit-->
                 <div class="act_as_cell amount" style="width: 6.02%;">
-                    <span t-field="account_or_partner_object.final_credit"/>
+                    <span t-field="account_or_partner_object.final_credit"  t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/>
                 </div>
                 <!--## balance cumulated-->
                 <div class="act_as_cell amount" style="width: 6.02%;">
-                    <span t-field="account_or_partner_object.final_balance"/>
+                    <span t-field="account_or_partner_object.final_balance" t-options="{'widget': 'float', 'precision': res_company.currency_id.decimal_places}"/>
                 </div>
                 <!--## currency_name + amount_currency-->
                 <t t-if="foreign_currency">
