@@ -17,7 +17,15 @@ class TestGeneralLedger(a_t_f_c.AbstractTestForeignCurrency):
         return self.env['report_general_ledger']
 
     def _getQwebReportName(self):
-        return 'account_financial_report.report_general_ledger_qweb'
+        if self.report.report_type == "qweb-pdf":
+            report_name = 'account_financial_report.report_general_ledger_qweb'
+        elif self.report.report_type == "qweb-html":
+            report_name = (
+                'account_financial_report.report_general_ledger_html_qweb'
+            )
+        else:
+            report_name = False
+        return report_name
 
     def _getXlsxReportName(self):
         return 'a_f_r.report_general_ledger_xlsx'
