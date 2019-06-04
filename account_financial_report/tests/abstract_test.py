@@ -212,10 +212,6 @@ class AbstractTest(common.TransactionCase):
 
         self.model = self._getReportModel()
 
-        self.qweb_report_name = self._getQwebReportName()
-        self.xlsx_report_name = self._getXlsxReportName()
-        self.xlsx_action_name = self._getXlsxReportActionName()
-
         self.report_title = self._getReportTitle()
 
         self.base_filters = self._getBaseFilters()
@@ -223,6 +219,10 @@ class AbstractTest(common.TransactionCase):
 
         self.report = self.model.create(self.base_filters)
         self.report.compute_data_for_report()
+
+        self.qweb_report_name = self._getQwebReportName()
+        self.xlsx_report_name = self._getXlsxReportName()
+        self.xlsx_action_name = self._getXlsxReportActionName()
 
     def test_html(self):
         test_reports.try_report(self.env.cr, self.env.uid,
