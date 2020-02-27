@@ -5,7 +5,7 @@
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 {
     "name": "Account Financial Reports",
-    "version": "12.0.2.0.0",
+    "version": "13.0.1.0.0",
     "category": "Reporting",
     "summary": "OCA Financial Reports",
     "author": "Camptocamp SA,"
@@ -40,7 +40,6 @@
         "view/report_aged_partner_balance.xml",
         "view/report_vat_report.xml",
     ],
-    "external_dependencies": {"python": ["natsort", "pandas"]},
     "installable": True,
     "application": True,
     "auto_install": False,

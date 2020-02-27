@@ -5,13 +5,12 @@
 
 from operator import itemgetter
 
-from natsort import natsorted
-
 from odoo import api, models
 
 
 class TrialBalanceReport(models.AbstractModel):
     _name = "report.account_financial_report.trial_balance"
+    _description = "Trial Balance Report"
 
     @api.model
     def get_html(self, given_context=None):
@@ -203,6 +202,7 @@ class TrialBalanceReport(models.AbstractModel):
                 pl_initial_currency_balance += initial_balance["amount_currency"]
         return pl_initial_balance, pl_initial_currency_balance
 
+    # flake8: noqa: C901
     def _get_data(
         self,
         account_ids,
@@ -620,7 +620,6 @@ class TrialBalanceReport(models.AbstractModel):
                         ] += total_amount[acc_id]["ending_currency_balance"]
         return groups_data
 
-    @api.multi
     def _get_report_values(self, docids, data):
         show_partner_details = data["show_partner_details"]
         wizard_id = data["wizard_id"]
@@ -682,9 +681,7 @@ class TrialBalanceReport(models.AbstractModel):
                 )
                 trial_balance = list(groups_data.values())
                 trial_balance += list(accounts_data.values())
-                trial_balance = natsorted(
-                    trial_balance, key=itemgetter("complete_code", "code")
-                )
+                trial_balance = sorted(trial_balance, key=lambda k: k["complete_code"])
                 for trial in trial_balance:
                     counter = trial["complete_code"].count("/")
                     trial["level"] = counter
@@ -694,10 +691,10 @@ class TrialBalanceReport(models.AbstractModel):
                 )
                 trial_balance = list(groups_data.values())
                 trial_balance += list(accounts_data.values())
-                trial_balance = natsorted(trial_balance, key=itemgetter("code"))
+                trial_balance = sorted(trial_balance, key=lambda k: k["code"])
             if hierarchy_on == "none":
                 trial_balance = list(accounts_data.values())
-                trial_balance = natsorted(trial_balance, key=itemgetter("code"))
+                trial_balance = sorted(trial_balance, key=lambda k: k["code"])
         else:
             if foreign_currency:
                 for account_id in accounts_data.keys():

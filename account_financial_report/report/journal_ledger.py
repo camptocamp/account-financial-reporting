@@ -4,11 +4,12 @@
 import itertools
 import operator
 
-from odoo import api, models
+from odoo import models
 
 
 class JournalLedgerReport(models.AbstractModel):
     _name = "report.account_financial_report.journal_ledger"
+    _description = "Journal Ledger Report"
 
     def _get_journal_ledger_data(self, journal):
         return {
@@ -176,24 +177,25 @@ class JournalLedgerReport(models.AbstractModel):
             self._get_move_lines_domain(move_ids, wizard, journal_ids),
             order=self._get_move_lines_order(move_ids, wizard, journal_ids),
         )
-        # Get the taxes ids for the move lines
-        query_taxes_params = self._get_query_taxes_params(move_lines)
-        query_taxes = self._get_query_taxes()
         move_line_ids_taxes_data = {}
-        self.env.cr.execute(query_taxes, query_taxes_params)
-        # Fetch the taxes associated to the move line
-        for (
-            move_line_id,
-            account_tax_id,
-            tax_description,
-            tax_name,
-        ) in self.env.cr.fetchall():
-            if move_line_id not in move_line_ids_taxes_data.keys():
-                move_line_ids_taxes_data[move_line_id] = {}
-            move_line_ids_taxes_data[move_line_id][account_tax_id] = {
-                "name": tax_name,
-                "description": tax_description,
-            }
+        if move_lines:
+            # Get the taxes ids for the move lines
+            query_taxes_params = self._get_query_taxes_params(move_lines)
+            query_taxes = self._get_query_taxes()
+            self.env.cr.execute(query_taxes, query_taxes_params)
+            # Fetch the taxes associated to the move line
+            for (
+                move_line_id,
+                account_tax_id,
+                tax_description,
+                tax_name,
+            ) in self.env.cr.fetchall():
+                if move_line_id not in move_line_ids_taxes_data.keys():
+                    move_line_ids_taxes_data[move_line_id] = {}
+                move_line_ids_taxes_data[move_line_id][account_tax_id] = {
+                    "name": tax_name,
+                    "description": tax_description,
+                }
         Move_Lines = {}
         accounts = self.env["account.account"]
         partners = self.env["res.partner"]
@@ -281,7 +283,6 @@ class JournalLedgerReport(models.AbstractModel):
                 ]
         return journals_taxes_data_2
 
-    @api.multi
     def _get_report_values(self, docids, data):
         wizard_id = data["wizard_id"]
         wizard = self.env["journal.ledger.report.wizard"].browse(wizard_id)
@@ -302,9 +303,12 @@ class JournalLedgerReport(models.AbstractModel):
             partner_ids_data
         ) = currency_ids_data = tax_line_ids_data = move_line_ids_taxes_data = {}
         if move_ids:
-            move_line_ids, move_lines_data, account_ids_data, partner_ids_data, currency_ids_data, tax_line_ids_data, move_line_ids_taxes_data = self._get_move_lines(
-                move_ids, wizard, journal_ids
-            )
+            move_lines = self._get_move_lines(move_ids, wizard, journal_ids)
+            move_lines_data = move_lines[1]
+            account_ids_data = move_lines[2]
+            partner_ids_data = move_lines[3]
+            currency_ids_data = move_lines[4]
+            tax_line_ids_data = move_lines[5]
         for move_data in moves_data:
             move_id = move_data["move_id"]
             move_data["report_move_lines"] = []

@@ -8,6 +8,7 @@ from odoo import _, models
 
 class GeneralLedgerXslx(models.AbstractModel):
     _name = "report.a_f_r.report_general_ledger_xlsx"
+    _description = "General Ledger XLSL Report"
     _inherit = "report.account_financial_report.abstract_report_xlsx"
 
     def _get_report_name(self, report, data=False):
@@ -119,6 +120,7 @@ class GeneralLedgerXslx(models.AbstractModel):
     def _get_col_pos_final_balance_label(self):
         return 5
 
+    # flake8: noqa: C901
     def _generate_report_content(self, workbook, report, data):
         res_data = self.env[
             "report.account_financial_report.general_ledger"

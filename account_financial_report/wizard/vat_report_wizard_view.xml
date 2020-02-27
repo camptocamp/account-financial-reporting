@@ -37,7 +37,6 @@
     <act_window id="action_vat_report_wizard"
                 name="VAT Report"
                 res_model="vat.report.wizard"
-                view_type="form"
                 view_mode="form"
                 view_id="vat_report_wizard"
                 target="new" />
